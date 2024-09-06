@@ -1,0 +1,5 @@
+.env
+django-env/
+intro_drf/api/__pycache__/
+intro_drf/api/migrations/
+intro_drf/intro_drf/__pycache__/
