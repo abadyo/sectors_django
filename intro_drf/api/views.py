@@ -107,15 +107,24 @@ class ReportsView(ListAPIView):
     def get_queryset(self):
         queryset = super().get_queryset()
         sub_sector = self.request.query_params.get("sub_sector", None)
+        total_companies = self.request.query_params.get("compy", None)
+        method = self.request.query_params.get("method", None)
 
         if sub_sector:
             queryset = queryset.filter(sub_sector__contains=sub_sector)
+        elif total_companies and method:
+            if method == "gte":
+                queryset = queryset.filter(total_companies__gte=total_companies)
+            elif method == "lte":
+                queryset = queryset.filter(total_companies__lte=total_companies)
         return queryset
 
     def list(self, request):
         x = request.GET.get("sub_sector", "")
+        total_companies = request.GET.get("compy", "")
+        method = request.GET.get("method", "")
 
-        cache_key = f"get-reports-{'all' if x == '' else x}"
+        cache_key = f"get-reports-{'all' if x == '' else x}-{'none' if total_companies == '' else total_companies}-{'none' if method == '' else method}"
         result = cache.get(cache_key)
 
         print(f"cache_key: {cache_key}")
