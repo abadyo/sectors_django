@@ -5,6 +5,7 @@ from rest_framework.generics import ListAPIView
 from django.core.cache import cache
 from rest_framework.response import Response
 from django.db.models import Q
+from rest_framework import status
 
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from rest_framework.permissions import IsAuthenticated
@@ -39,10 +40,11 @@ class InstitutionsView(ListAPIView):
         if not result:  # If no cache is found
             print("Hitting DB")  # Log to indicate a database query is being made
             result = self.get_queryset()  # Query the database for the data
-            # print(result.values())  # Log the retrieved data (for debugging purposes)
 
-            # Optional: Adjust the data before caching (e.g., filtering or transforming)
-            # result = result.values_list('symbol')
+            if not result:
+                return Response(
+                    status=status.HTTP_404_NOT_FOUND,
+                )
 
             cache.set(cache_key, result, 60)  # Cache the result for 60 seconds
         else:
@@ -52,7 +54,9 @@ class InstitutionsView(ListAPIView):
         result = self.serializer_class(result, many=True)
         # print(result.data)  # Log the serialized data (for debugging purposes)
 
-        return Response(result.data)  # Return the serialized data as a response
+        return Response(
+            result.data, status=status.HTTP_200_OK
+        )  # Return the serialized data as a response
 
 
 class MetadataView(ListAPIView):
@@ -67,12 +71,12 @@ class MetadataView(ListAPIView):
 
         if sector and sub_sector:
             queryset = queryset.filter(
-                Q(sector__contains=sector) & Q(sub_sector__contains=sub_sector)
+                Q(sector__icontains=sector) & Q(sub_sector__icontains=sub_sector)
             )
         elif sector:
-            queryset = queryset.filter(sector=sector)
+            queryset = queryset.filter(Q(sector__icontains=sector))
         elif sub_sector:
-            queryset = queryset.filter(sub_sector=sub_sector)
+            queryset = queryset.filter(Q(sub_sector__icontains=sub_sector))
         return queryset
 
     def list(self, request):
@@ -89,6 +93,9 @@ class MetadataView(ListAPIView):
             print("Hitting DB")
             result = self.get_queryset()
 
+            if not result:
+                return Response(status=status.HTTP_404_NOT_FOUND)
+
             # Optional: Adjust the data before caching (e.g., filtering or transforming)
             # result = result.values_list("sector")
 
@@ -100,7 +107,7 @@ class MetadataView(ListAPIView):
         result = self.serializer_class(result, many=True)
         # print(result.data)  # Log the serialized data (for debugging purposes)
 
-        return Response(result.data)
+        return Response(result.data, status=status.HTTP_200_OK)
 
 
 # TODO add cache
@@ -118,7 +125,7 @@ class ReportsView(ListAPIView):
         if top:
             queryset = queryset.order_by("-total_market_cap")[: int(top)]
         if sub_sector:
-            queryset = queryset.filter(sub_sector__contains=sub_sector)
+            queryset = queryset.filter(sub_sector__icontains=sub_sector)
         elif total_companies and method:
             if method == "gte":
                 queryset = queryset.filter(total_companies__gte=total_companies)
@@ -142,6 +149,9 @@ class ReportsView(ListAPIView):
             print("Hitting DB")
             result = self.get_queryset()
 
+            if not result:
+                return Response(status=status.HTTP_404_NOT_FOUND)
+
             # Optional: Adjust the data before caching (e.g., filtering or transforming)
             # result = result.values_list("sector")
 
@@ -153,4 +163,4 @@ class ReportsView(ListAPIView):
         result = self.serializer_class(result, many=True)
         # print(result.data)  # Log the serialized data (for debugging purposes)
 
-        return Response(result.data)
+        return Response(result.data, status=status.HTTP_200_OK)
