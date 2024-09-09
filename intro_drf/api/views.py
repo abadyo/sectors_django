@@ -83,10 +83,9 @@ class MetadataView(ListAPIView):
         x = request.GET.get("sector", "")
         y = request.GET.get("sub_sector", "")
 
-        cache_key = f"get-metadata-{x + y}"
+        cache_key = f"get-metadata-{'' if x == '' else x}-{'' if y == '' else y}"
         result = cache.get(cache_key)
-
-        print(f"cache_key: {cache_key}")
+        # print(f"cache_key: {cache_key}")
         # print(f"result: {result}")
 
         if not result:
@@ -95,11 +94,6 @@ class MetadataView(ListAPIView):
 
             if not result:
                 return Response(status=status.HTTP_404_NOT_FOUND)
-
-            # Optional: Adjust the data before caching (e.g., filtering or transforming)
-            # result = result.values_list("sector")
-
-            # print(result)
 
             cache.set(cache_key, result, 60)
         else:
@@ -151,11 +145,6 @@ class ReportsView(ListAPIView):
 
             if not result:
                 return Response(status=status.HTTP_404_NOT_FOUND)
-
-            # Optional: Adjust the data before caching (e.g., filtering or transforming)
-            # result = result.values_list("sector")
-
-            # print(result)
 
             cache.set(cache_key, result, 60)
         else:
