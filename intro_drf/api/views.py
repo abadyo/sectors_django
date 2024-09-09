@@ -6,11 +6,15 @@ from django.core.cache import cache
 from rest_framework.response import Response
 from django.db.models import Q
 
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+from rest_framework.permissions import IsAuthenticated
+
 
 # Create your views here.
 class InstitutionsView(ListAPIView):
     queryset = Institutions.objects.all()
     serializer_class = InstituionsSerializer
+    permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -109,7 +113,10 @@ class ReportsView(ListAPIView):
         sub_sector = self.request.query_params.get("sub_sector", None)
         total_companies = self.request.query_params.get("compy", None)
         method = self.request.query_params.get("method", None)
+        top = self.request.query_params.get("top", None)
 
+        if top:
+            queryset = queryset.order_by("-total_market_cap")[: int(top)]
         if sub_sector:
             queryset = queryset.filter(sub_sector__contains=sub_sector)
         elif total_companies and method:
@@ -123,8 +130,9 @@ class ReportsView(ListAPIView):
         x = request.GET.get("sub_sector", "")
         total_companies = request.GET.get("compy", "")
         method = request.GET.get("method", "")
+        top = request.GET.get("top", "")
 
-        cache_key = f"get-reports-{'all' if x == '' else x}-{'none' if total_companies == '' else total_companies}-{'none' if method == '' else method}"
+        cache_key = f"get-reports-{'all' if x == '' else x}-{'none' if total_companies == '' else total_companies}-{'none' if method == '' else method}-{'none' if top == '' else top}"
         result = cache.get(cache_key)
 
         print(f"cache_key: {cache_key}")
