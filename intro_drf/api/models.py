@@ -51,3 +51,22 @@ class Reports(models.Model):
     class Meta:
         managed = False
         db_table = "reports"
+
+
+class IDXSummary(models.Model):
+    ticker = models.TextField(primary_key=True)
+    company_name = models.TextField(blank=True, null=True)
+    last_trade = models.TextField(blank=True, null=True)
+    previous_close_price = models.FloatField(blank=True, null=True)
+    close_price = models.FloatField(blank=True, null=True)
+    open_price = models.FloatField(blank=True, null=True)
+    high_price = models.FloatField(blank=True, null=True)
+    low_price = models.FloatField(blank=True, null=True)
+    change_price = models.FloatField(blank=True, null=True)
+    volume = models.BigIntegerField(blank=True, null=True)
+    foreign_sell = models.BigIntegerField(blank=True, null=True)
+    foreign_buy = models.BigIntegerField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = "idx_summary"

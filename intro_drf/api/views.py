@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .serializer import InstituionsSerializer, MetadataSerializer, ReportsSerializer
+from .serializer import *
 from .models import Institutions, Metadata, Reports
 from rest_framework.generics import ListAPIView
 from django.core.cache import cache
@@ -134,6 +134,43 @@ class ReportsView(ListAPIView):
         top = request.GET.get("top", "")
 
         cache_key = f"get-reports-{'all' if x == '' else x}-{'none' if total_companies == '' else total_companies}-{'none' if method == '' else method}-{'none' if top == '' else top}"
+        result = cache.get(cache_key)
+
+        print(f"cache_key: {cache_key}")
+        # print(f"result: {result}")
+
+        if not result:
+            print("Hitting DB")
+            result = self.get_queryset()
+
+            if not result:
+                return Response(status=status.HTTP_404_NOT_FOUND)
+
+            cache.set(cache_key, result, 60)
+        else:
+            print("Cache retrieved!")
+        result = self.serializer_class(result, many=True)
+        # print(result.data)  # Log the serialized data (for debugging purposes)
+
+        return Response(result.data, status=status.HTTP_200_OK)
+
+
+class IDXView(ListAPIView):
+    queryset = IDXSummary.objects.all()
+    serializer_class = IDXSummarySerializer
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        ticker = self.request.query_params.get("ticker", None)
+
+        if ticker:
+            queryset = queryset.filter(ticker__icontains=ticker)
+        return queryset
+
+    def list(self, request):
+        x = request.GET.get("ticker", "")
+
+        cache_key = f"get-idx-summary-{'all' if x == '' else x}"
         result = cache.get(cache_key)
 
         print(f"cache_key: {cache_key}")

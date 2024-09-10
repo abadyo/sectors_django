@@ -18,3 +18,9 @@ class ReportsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Reports
         fields = "__all__"
+
+
+class IDXSummarySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = IDXSummary
+        fields = "__all__"

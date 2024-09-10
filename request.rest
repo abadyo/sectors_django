@@ -1,0 +1,34 @@
+### institution
+GET http://127.0.0.1:8000/api/get-institution-trade
+Authorization: Basic abad:abad
+
+###
+GET http://127.0.0.1:8000/api/get-institution-trade?name=Dimensional%20Fund%20Advisors%20LP
+Authorization: Basic abad:abad
+
+
+### metadata
+GET http://127.0.0.1:8000/api/get-metadata?sector=Financial
+
+###
+GET http://127.0.0.1:8000/api/get-metadata?sub_sector=Banks
+
+
+
+### reports
+GET http://127.0.0.1:8000/api/get-reports?sub_sector=Banks
+
+###
+GET http://127.0.0.1:8000/api/get-reports?compy=100&method=gte
+
+###
+GET http://127.0.0.1:8000/api/get-reports?compy=100&method=lte
+
+
+### 
+GET http://127.0.0.1:8000/api/get-reports?top=5
+
+
+###
+GET http://127.0.0.1:8000/api/get-idx-summary?ticker=BMRI
+
